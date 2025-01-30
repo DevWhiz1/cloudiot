@@ -1,0 +1,99 @@
+esphome:
+  name: it_office_ac
+  friendly_name: it_office_ac
+
+esp32:
+  board: esp32dev
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+
+# OTA updates
+ota:
+  platform: esphome
+
+wifi:
+  ssid: Qatar-Emporium
+  password: DigitalSpyre@14321NADA
+
+  # Enable fallback hotspot in case Wi-Fi connection fails
+  ap:
+    ssid: "it AC Fallback Hotspot"
+    password: "gh0S1f6ZWIKV"
+
+captive_portal:
+
+# MQTT configuration
+mqtt:
+  broker: "broker.hivemq.com"
+  port: 1883
+  username: ""
+  password: ""
+
+  on_message:
+    # Power control via MQTT
+    - topic: "thecld/it_office_ac/au/ac/on"
+      then:
+        - climate.haier.power_on: haier_ac
+    - topic: "thecld/it_office_ac/au/ac/off"
+      then:
+        - climate.haier.power_off: haier_ac
+
+# UART for communication with AC
+uart:
+  tx_pin: 17
+  rx_pin: 16
+  baud_rate: 9600
+  id: ac_port
+
+# Climate device for controlling the AC
+climate:
+  - platform: haier
+    id: haier_ac
+    protocol: smartair2
+    name: "Haier AC"
+    uart_id: ac_port
+    wifi_signal: true
+    display: true
+    visual:
+      min_temperature: 16°C
+      max_temperature: 30°C
+      temperature_step: 1°C
+    supported_modes:
+      - "OFF"
+      - "HEAT_COOL"
+      - "COOL"
+      - "HEAT"
+      - "DRY"
+      - "FAN_ONLY"
+    supported_swing_modes:
+      - "OFF"
+      - "VERTICAL"
+      - "HORIZONTAL"
+      - "BOTH"
+    supported_presets:
+      - "AWAY"
+      - "BOOST"
+      - "COMFORT"
+
+    # Publish MQTT messages on state change
+    action_state_topic: "thecld/it_office_ac/au/ac/action"
+    current_temperature_state_topic: "thecld/it_office_ac/au/ac/current_temperature"
+    current_humidity_state_topic: "thecld/it_office_ac/au/ac/current_humidity"
+    fan_mode_state_topic: "thecld/it_office_ac/au/ac/fan_mode"
+    fan_mode_command_topic: "thecld/it_office_ac/au/set_fan_mode"
+    mode_state_topic: "thecld/it_office_ac/au/ac/mode"
+    mode_command_topic: "thecld/it_office_ac/au/set_mode"
+    preset_state_topic: "thecld/it_office_ac/au/ac/preset"
+    preset_command_topic: "thecld/it_office_ac/au/set_preset"
+    swing_mode_state_topic: "thecld/it_office_ac/au/ac/swing_mode"
+    swing_mode_command_topic: "thecld/it_office_ac/au/set_swing_mode"
+    target_temperature_state_topic: "thecld/it_office_ac/au/ac/target_temperature"
+    target_temperature_command_topic: "thecld/it_office_ac/au/set_temperature"
+    
+# Web server for local access
+web_server:
+  port: 80

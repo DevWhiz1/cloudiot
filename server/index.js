@@ -38,6 +38,7 @@ const start = async () => {
         console.log('Connected to database');
 
         const server = http.createServer(app);
+        
         const io = new Server(server, {
             cors: {
                 origin: "*", 
@@ -208,3 +209,4 @@ const start = async () => {
     }
 };
 start();
+module.exports = app;

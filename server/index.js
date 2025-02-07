@@ -10,7 +10,16 @@ const Entity = require('./models/entity.model'); // Entity model for DB interact
 const mongodb_Url = process.env.MONGO_URI;
 const app = express();
 // Middleware
-app.use(cors());
+
+const corsOptions = {
+    origin: "*",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true, 
+};
+
+app.use(cors(corsOptions));
+
+// app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 const entityRoutes = require('./routes/entity.route');
@@ -210,3 +219,187 @@ const start = async () => {
 };
 start();
 module.exports = app;
+
+
+
+
+
+
+
+
+
+
+
+// require('dotenv').config();
+// const express = require('express');
+// const cors = require('cors');
+// const bodyParser = require('body-parser');
+// const connectDB = require('./db/connect');
+// const mqttClient = require('./mqtt/mqttClient');
+// const { Server } = require('socket.io');
+// const http = require('http');
+// const Entity = require('./models/entity.model'); // Entity model for DB interaction
+// const entityHistoryModel = require('./models/entityHistory.model');
+
+// const mongodb_Url = process.env.MONGO_URI;
+// const port = process.env.PORT || 5000;
+// const app = express();
+
+// // Middleware
+// const corsOptions = {
+//     origin: "https://cloudiot-automation-ad8hyaue4.vercel.app",
+//     methods: "GET,POST,PUT,DELETE",
+//     credentials: true, 
+// };
+
+// app.use(cors(corsOptions));
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
+
+// // Routes
+// app.use('/user', require('./routes/user'));
+// app.use('/device', require('./routes/devices.route'));
+// app.use('/entity', require('./routes/entity.route'));
+// app.use('/automation', require('./routes/automation.route'));
+// app.use('/energy', require('./routes/history.route'));
+// app.use('/ac', require('./routes/airConditioner.route'));
+
+// const start = async () => {
+//     try {
+//         await connectDB(mongodb_Url);
+//         console.log('✅ Connected to database');
+
+//         const server = http.createServer(app);
+//         const io = new Server(server, {
+//             cors: {
+//                 origin: "*",
+//             },
+//         });
+
+//         server.listen(port, () => {
+//             console.log(`🚀 Server is running on port ${port}`);
+//         });
+
+//         // Fetch and subscribe to active entity topics
+//         const entities = await Entity.find({ isActive: true });
+//         entities.forEach((entity) => {
+//             mqttClient.subscribe(entity.subscribeTopic, (err) => {
+//                 if (err) {
+//                     console.error(`❌ Failed to subscribe to ${entity.subscribeTopic}:`, err);
+//                 } else {
+//                     console.log(`📡 Subscribed to topic: ${entity.subscribeTopic}`);
+//                 }
+//             });
+//         });
+
+//         io.on('connection', async (socket) => {
+//             console.log('🔗 New WebSocket client connected');
+
+//             try {
+//                 const entities = await Entity.find({ isActive: true }).populate('device', 'name');
+//                 const groupedEntities = entities.reduce((groups, entity) => {
+//                     if (!entity.device) {
+//                         console.warn(`⚠️ Entity ${entity._id} has no associated device`);
+//                         return groups;
+//                     }
+
+//                     const deviceId = entity.device._id.toString();
+//                     if (!groups[deviceId]) {
+//                         groups[deviceId] = {
+//                             deviceId: entity.device._id,
+//                             deviceName: entity.device.name,
+//                             entities: [],
+//                         };
+//                     }
+//                     groups[deviceId].entities.push({
+//                         _id: entity._id,
+//                         entityName: entity.entityName,
+//                         entityId: entity.entityId,
+//                         subscribeTopic: entity.subscribeTopic,
+//                         publishTopic: entity.publishTopic,
+//                         stateType: entity.stateType,
+//                         state: entity.state,
+//                     });
+//                     return groups;
+//                 }, {});
+
+//                 socket.emit('initial_state', { devices: Object.values(groupedEntities) });
+//                 console.log('📤 Sent grouped entities to the client');
+//             } catch (error) {
+//                 console.error('❌ Error fetching initial state:', error);
+//             }
+
+//             socket.on('state_change', async ({ publishTopic, state }) => {
+//                 try {
+//                     console.log(`🔄 State change request for ${publishTopic}: ${state}`);
+
+//                     const entity = await Entity.findOne({ publishTopic });
+//                     if (entity) {
+//                         const stateString = typeof state === 'number' ? state.toString() : state;
+
+//                         mqttClient.publish(publishTopic, stateString, (err) => {
+//                             if (err) {
+//                                 console.error('❌ MQTT Publish Failed:', err);
+//                             } else {
+//                                 console.log(`✅ Published state to ${publishTopic}: ${state}`);
+//                             }
+//                         });
+//                     }
+//                 } catch (error) {
+//                     console.error('❌ Error handling state change:', error);
+//                 }
+//             });
+
+//             socket.on('disconnect', () => {
+//                 console.log('🔌 Client disconnected');
+//             });
+//         });
+
+//         // MQTT Message Handling
+//         mqttClient.on('message', async (topic, message) => {
+//             try {
+//                 const entity = await Entity.findOne({ subscribeTopic: topic });
+//                 if (entity) {
+//                     const newState = message.toString();
+//                     entity.state = newState;
+//                     entity.updatedAt = new Date();
+//                     await entity.save();
+//                     console.log(`✅ Updated entity state: ${entity.entityName} → ${newState}`);
+
+//                     // Update or create entity history
+//                     let entityHistory = await entityHistoryModel.findOne({ entityId: entity._id });
+//                     if (entityHistory) {
+//                         entityHistory.history.push({ value: newState, time: new Date() });
+//                         await entityHistory.save();
+//                     } else {
+//                         entityHistory = new entityHistoryModel({
+//                             entityId: entity._id,
+//                             deviceId: entity.device,
+//                             history: [{ value: newState, time: new Date() }],
+//                         });
+//                         await entityHistory.save();
+//                     }
+
+//                     console.log(`📜 Entity history updated for ${entity.entityName}`);
+
+//                     // Broadcast updated state to clients
+//                     io.emit('state_update', {
+//                         deviceId: entity.device,
+//                         entityId: entity._id,
+//                         state: newState,
+//                     });
+//                 } else {
+//                     console.warn(`⚠️ No entity found for topic: ${topic}`);
+//                 }
+//             } catch (error) {
+//                 console.error('❌ Error handling MQTT message:', error);
+//             }
+//         });
+
+//     } catch (error) {
+//         console.error('❌ Server start failed:', error);
+//     }
+// };
+
+// start();
+// module.exports = app;

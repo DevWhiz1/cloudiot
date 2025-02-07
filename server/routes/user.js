@@ -6,7 +6,7 @@ const authMiddleware = require('../middleware/auth');
 const {saveAcData}=require("../controllers/airConditioner.controller")
 
 router.route("/login").post(login);
-router.route("/register").post(register);
+router.route("/signup").post(register);
 router.route("/dashboard").get(authMiddleware, dashboard);
 router.route("/users").get(getAllUsers);
 

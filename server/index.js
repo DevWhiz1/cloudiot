@@ -11,13 +11,13 @@ const mongodb_Url = process.env.MONGO_URI;
 const app = express();
 // Middleware
 
-const corsOptions = {
-    origin: "*",
-    methods: "GET,POST,PUT,DELETE",
-    credentials: true, 
-};
+// const corsOptions = {
+//     origin: "*",
+//     methods: "GET,POST,PUT,DELETE",
+//     credentials: true, 
+// };
 
-app.use(cors(corsOptions));
+app.use(cors());
 
 // app.use(cors());
 app.use(bodyParser.json());
@@ -35,8 +35,8 @@ app.use('/entity', entityRoutes);
 app.use('/automation', automationRoutes);
 app.use('/energy', EntityHistory);
 app.use("/ac", AirconditionerRoutes)
-
-
+// app.get("/", {req,res} =>)
+app.get('/', (req, res) => { res.status(200).json({message:"Server is running"})})
 // Start server
 const port = process.env.PORT;
 const dbConnectionString = mongodb_Url;

@@ -38,7 +38,7 @@ app.use("/ac", AirconditionerRoutes)
 // app.get("/", {req,res} =>)
 app.get('/', (req, res) => { res.status(200).json({message:"Server is running"})})
 // Start server
-const port = process.env.PORT;
+const port = process.env.PORT || 5000;
 const dbConnectionString = mongodb_Url;
 
 const start = async () => {

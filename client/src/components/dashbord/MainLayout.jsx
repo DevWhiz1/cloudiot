@@ -14,6 +14,7 @@ import {
 import { MoreVert } from '@mui/icons-material';
 import OnlinePredictionIcon from '@mui/icons-material/OnlinePrediction';
 import Slider from '@mui/material/Slider';
+import WfsPulseCounter from '../waterManagmentSystem/WfsPulseCounter';
 
 const IOTDashboard = () => {
   const [socket, setSocket] = useState(null);
@@ -61,6 +62,8 @@ const IOTDashboard = () => {
   if (loading) return <div>Loading...</div>;
 
   return (
+    <>
+    {/* <WfsPulseCounter/> */}
     <Box sx={{ flexGrow: 1, p: 3 }}>
       <Box
         sx={{
@@ -145,6 +148,7 @@ const IOTDashboard = () => {
         ))}
       </Box>
     </Box>
+    </>
   );
 };
 

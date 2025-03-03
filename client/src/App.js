@@ -91,6 +91,10 @@ import AirConditionerForm from "./components/airConditioner/AcForm";
 import AllAirConditioner from "./components/airConditioner/AirConditioner";
 import AcControlls from "./components/airConditioner/AcControlls";
 import DevicesAndEntities from "./scenes/allDevices/DeviceswithEntities";
+import Entities from "./components/entityHistoricData/Entities";
+import EntityDetailsComponent from "./components/entityHistoricData/EntityDetails";
+import WmsMotorsComponent from "./components/waterManagmentSystem/wmsMotors";
+import WmsMotorsDetail from "./components/waterManagmentSystem/WmsMotorsDetail";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -179,6 +183,14 @@ function App() {
                       </PrivateRoute>
                     }
                   />
+                  <Route 
+                  path="/entities"
+                  element={
+                    <PrivateRoute>
+                      <Entities/>
+                    </PrivateRoute>
+                  }/>
+                  <Route path="/entities/history/detail/:id" element={<EntityDetailsComponent/>}/>
                    <Route
                     path="/entityform"
                     element={
@@ -193,7 +205,8 @@ function App() {
                     <PrivateRoute>
                       <EnergyMeters/>
                     </PrivateRoute>
-                  }></Route> <Route path="/energy/meters/detail/:id" element={<EnergyDashboard />} />
+                  }></Route>
+                   <Route path="/energy/meters/detail/:id" element={<EnergyDashboard />} />
                   {/* Add more protected routes here */}
                   <Route
                   path="/air-conditioner/add"
@@ -222,6 +235,20 @@ function App() {
                 }
                 
                 ></Route>
+                <Route 
+                path="/wms/motors"
+                element={
+                  <PrivateRoute>
+                    <WmsMotorsComponent/>
+                  </PrivateRoute>
+                }/>
+                <Route
+                path="/wms/motors/history/detail/:id"
+                element={
+                  <PrivateRoute>
+                    <WmsMotorsDetail/>
+                  </PrivateRoute>
+                }/>
                 </Routes>
               </main>
             </div>

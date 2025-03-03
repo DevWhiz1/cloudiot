@@ -25,6 +25,7 @@ import ViewInArIcon from '@mui/icons-material/ViewInAr';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import CodeIcon from '@mui/icons-material/Code';
 import LoginIcon from '@mui/icons-material/Login';
+import WaterDamageIcon from '@mui/icons-material/WaterDamage';
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -180,11 +181,18 @@ const Sidebar = () => {
               color={colors.grey[300]}
               sx={{ m: "15px 0 5px 20px" }}
             >
-              Switches
+              Entities
             </Typography>
             <Item
               title="Entity Switch"
               to="/"
+              icon={<OnDeviceTrainingIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+            <Item
+              title="Entity Historic Data"
+              to="/entities"
               icon={<OnDeviceTrainingIcon />}
               selected={selected}
               setSelected={setSelected}
@@ -261,13 +269,22 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-            {/* <Item
-              title="Geography Chart"
-              to="/user/register"
-              icon={<MapOutlinedIcon />}
+
+<Typography
+              variant="h6"
+              color={colors.grey[300]}
+              sx={{ m: "15px 0 5px 20px" }}
+            >
+              WMS Dashboard
+            </Typography>
+            <Item
+              title="WMS Dashboard"
+              to="/wms/motors"
+              icon={<WaterDamageIcon/>}
               selected={selected}
               setSelected={setSelected}
-            /> */}
+            />
+    
           </Box>
         </Menu>
       </ProSidebar>

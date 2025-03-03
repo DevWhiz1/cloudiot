@@ -29,13 +29,17 @@ const automationRoutes = require('./routes/automation.route');
 const entityHistoryModel = require('./models/entityHistory.model');
 const EntityHistory= require("./routes/history.route");
 const AirconditionerRoutes = require("./routes/airConditioner.route")
+const entityHistoryRoutes = require("./routes/entityHistory.route")
+const wmsRoutes= require("./routes/wms.route")
 app.use('/user', userRoutes);
 app.use('/device', deviceRoutes);
 app.use('/entity', entityRoutes);
 app.use('/automation', automationRoutes);
 app.use('/energy', EntityHistory);
-app.use("/ac", AirconditionerRoutes)
-// app.get("/", {req,res} =>)
+app.use("/ac", AirconditionerRoutes);
+app.use("/entity",entityHistoryRoutes);
+app.use("/wms",wmsRoutes);
+
 app.get('/', (req, res) => { res.status(200).json({message:"Server is running"})})
 // Start server
 const port = process.env.PORT || 5000;

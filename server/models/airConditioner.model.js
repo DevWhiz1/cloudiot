@@ -1,85 +1,128 @@
 // const mongoose = require("mongoose");
 // const Schema = mongoose.Schema;
 
-// const AirConditionerSchema = new Schema({
-//   Devicename: {
-//     type: String,
-//     required: true,
-//   },
-//   power: {
-//     state: {
-//       type: String, // Change this to a valid type like String, or if it's intended to be Mixed, use Mixed directly.
-//       default: "off",
+// const AirConditionerSchema = new Schema(
+//   {
+//     devicename: {
+//       type: String,
+//       required: true,
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   mode: {
-//     state: {
-//       type: String, // Same here, use a valid type like String
-//       default: "HEAT", 
+//     deviceID: {
+//       type: String,
+//       required: true,
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   targetTemperature: {
-//     state: {
-//       type: Number, // Use Number for temperatures
-//       default: 28,
+//     deviceStatus:{
+//       state:{
+//       type: String,
+//       default: "online",
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   currentTemperature: {
-//     state: {
-//       type: Number, // Use Number for temperatures
-//       default: 24,
+//     power: {
+//       state: {
+//         type: String,
+//         default: "off",
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//       publishTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   swingMode: {
-//     state: {
-//       type: String, // Use String for state values
-//       default: "off", 
+//     mode: {
+//       state: {
+//         type: String,
+//         default: "Heat",
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//       publishTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   fanMode: {
-//     state: {
-//       type: String, // Use String for state values
-//       default: "auto", 
+//     targetTemperature: {
+//       state: {
+//         type: Number,
+//         default: 26,
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//       publishTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   currentHumidity: {
-//     state: {
-//       type: Number, // Use Number for humidity
-//       default: 50, 
+//     currentTemperature: {
+//       state: {
+//         type: Number,
+//         default: 18,
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
-//   },
-//   presetState: {
-//     state: {
-//       type: String, // Use String for preset states
-//       default: "COMFORT", 
+//     swingMode: {
+//       state: {
+//         type: String,
+//         default: "off",
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//       publishTopic: {
+//         type: String,
+//         required: true,
+//       },
 //     },
-//     subscribeTopic: String,
-//     publishTopic: String,
+//     fanMode: {
+//       state: {
+//         type: String,
+//         default: "auto",
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//       publishTopic: {
+//         type: String,
+//         required: true,
+//       },
+//     },
+//     currentHumidity: {
+//       state: {
+//         type: Number,
+//         default: 40,
+//       },
+//       subscribeTopic: {
+//         type: String,
+//         required: true,
+//       },
+//     },
+//     isActive: {
+//       type: Boolean,
+//       default: true,
+//     },
 //   },
-//   isActive: {
-//     type: Boolean,
-//     default: true,
-//   },
-// }, {
-//   timestamps: true,
-// });
+//   {
+//     timestamps: true,
+//   }
+// );
 
 // const AirConditionerModel = mongoose.model("Airconditioner", AirConditionerSchema);
-// module.exports = AirConditionerModel ;
+// module.exports = AirConditionerModel;
 
 
 
@@ -91,7 +134,7 @@ const AirConditionerSchema = new Schema({
     type: String,
     required: true,
   },
-  deviceID:{
+  deviceId:{
     type: String,
     required: true,
   },
@@ -101,7 +144,7 @@ const AirConditionerSchema = new Schema({
   },
   mode: {
     type: String,
-    default: "Heat",
+    default: "Cool",
   },
   targetTemperature: {
      type: Number,
@@ -109,7 +152,7 @@ const AirConditionerSchema = new Schema({
   },
   currentTemperature: {
    type: Number,
-    default: 18,
+    default: 30,
   },
   swingMode: {
     type: String,

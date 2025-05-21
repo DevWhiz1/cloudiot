@@ -47,13 +47,71 @@ const getallDevices=async (req, res,next)=>{
     }
 }
 
+// Edit Device
+const editDevice = async (req, res, next) => {
+    try{
+        const deviceId = req.params.deviceId; 
+        const body = req.body;
+        const device= await Device.findByIdAndUpdate(
+            deviceId,
+            body,
+            { new: true }
+        )
+        if (!device) {
+            return res.status(404).json({
+                status: false,
+                msg: "Device not found"
+            });
+        }
+        return res.status(200).json({
+            status: true,
+            data: device,
+            msg: "Device updated successfully"
+        });
+
+    }catch(error){
+        return res.status(500).json({
+            status:false,
+            error:error.message,
+            msg:"Internal server error"
+        })
+    }
+}
+
+// delete device 
+const deleteDevice = async (req, res, next) => {
+    try{
+
+        const deviceId = req.params.deviceId;
+        const device = await Device.findByIdAndDelete(deviceId);
+        if (!device) {
+            return res.status(404).json({
+                status: false,
+                msg: "Device not found"
+            });
+        }
+
+        // also delete all accosiated entities
+        await Entity.deleteMany({ device: deviceId });
+        return res.status(200).json({
+            status: true,
+            msg: "Device and its associated entities deleted successfully"
+        });
+    }catch(error){
+        return res.status(500).json({
+            status:false,
+            error:error.message,
+            msg:"Internal server error"
+        })
+    }
+}
 //entity by device id 
 const getEntitiesByDeviceId = async (req, res, next) => {
     try {
-        const deviceId = req.params.deviceId; // Get device ID from request params
+        const deviceId = req.params.deviceId; 
 
-        // Assuming each device has an `entities` field that stores the entities
-        const device = await Device.findById(deviceId).populate('entities'); // Adjust this based on your schema
+        
+        const device = await Device.findById(deviceId).populate('entities');
 
         if (!device) {
             return res.status(404).json({
@@ -141,5 +199,7 @@ module.exports={
     AddDevice,
     getallDevices,
     getAllDeviceswithEntities,
-    getEntitiesByDeviceId
+    getEntitiesByDeviceId,
+    editDevice,
+    deleteDevice
 };

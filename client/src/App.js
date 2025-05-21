@@ -95,6 +95,9 @@ import Entities from "./components/entityHistoricData/Entities";
 import EntityDetailsComponent from "./components/entityHistoricData/EntityDetails";
 import WmsMotorsComponent from "./components/waterManagmentSystem/wmsMotors";
 import WmsMotorsDetail from "./components/waterManagmentSystem/WmsMotorsDetail";
+import EditDevices from "./scenes/form/EditDevices"
+import EditEntities from "./scenes/form/EditEntities";
+import { WebSocketProvider } from './context/useWebsocket';
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -107,6 +110,7 @@ function App() {
   const isNoLayoutRoute = noLayoutRoutes.includes(location.pathname);
 
   return (
+    <WebSocketProvider>
     <AuthProvider>
       <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}> 
@@ -148,6 +152,22 @@ function App() {
                   element={
                     <PrivateRoute>
                       <DevicesAndEntities/>
+                    </PrivateRoute>
+                  }
+                  />
+                  <Route
+                  path="/editdevices"
+                  element={
+                    <PrivateRoute>
+                      <EditDevices/>
+                    </PrivateRoute>
+                  }
+                  />
+ <Route
+                  path="/devices/:deviceId/entities"
+                  element={
+                    <PrivateRoute>
+                      <EditEntities/>
                     </PrivateRoute>
                   }
                   />
@@ -227,7 +247,7 @@ function App() {
                 }
                 ></Route>
                 <Route
-                path="/ac/dashbord/device/controll/:id"
+                path="/ac/dashbord/device/controll/:deviceId"
                 element={
                   <PrivateRoute>
                     <AcControlls/>
@@ -256,6 +276,7 @@ function App() {
          </ThemeProvider> 
       </ColorModeContext.Provider>
     </AuthProvider>
+    </WebSocketProvider>
   );
 }
 

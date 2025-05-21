@@ -26,6 +26,8 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import CodeIcon from '@mui/icons-material/Code';
 import LoginIcon from '@mui/icons-material/Login';
 import WaterDamageIcon from '@mui/icons-material/WaterDamage';
+// import EditDocumentIcon from '@mui/icons-material/EditDocument';
+import EditIcon from '@mui/icons-material/Edit';
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -141,13 +143,13 @@ const Sidebar = () => {
             >
               Data
             </Typography>
-            <Item
+            {/* <Item
               title="Manage Users"
               to="/team"
               icon={<PeopleOutlinedIcon />}
               selected={selected}
               setSelected={setSelected}
-            />
+            /> */}
             {/* <Item title="User Login"
               to="/user/login"
               icon={<LoginIcon/>}
@@ -184,7 +186,7 @@ const Sidebar = () => {
               Entities
             </Typography>
             <Item
-              title="Entity Switch"
+              title="Entity Dashboard"
               to="/"
               icon={<OnDeviceTrainingIcon />}
               selected={selected}
@@ -218,6 +220,20 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+             <Item
+              title="Edit Devices"
+              to="/editdevices"
+              icon={<EditIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
+             {/* <Item
+              title="Edit Entities"
+              to="/editentities"
+              icon={<EditIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            /> */}
             <Item
               title="Code Editor"
               to="/codeeditor"

@@ -21,6 +21,9 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as yup from 'yup';
 import axios from 'axios';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
 
 const ApiUrl = process.env.REACT_APP_API_URL;
 
@@ -52,20 +55,23 @@ const validationSchema = yup.object({
     .required('Confirm Password is required'),
 });
 
-// Handle signup API call
-const handleApiCall = async (values) => {
-  try {
-    const response = await axios.post(`${ApiUrl}/user/signup`, values);
-    console.log('Signup success:', response.data);
-  } catch (error) {
-    console.error('Signup error:', error);
-  }
-};
-
 function SignupPage() {
   const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'));
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const navigate = useNavigate();
+
+  // Move handleApiCall inside the component so it can access setSnackbar and navigate
+  const handleApiCall = async (values) => {
+    try {
+      const response = await axios.post(`${ApiUrl}/user/signup`, values);
+      setSnackbar({ open: true, message: 'Signup successful! Redirecting to login...', severity: 'success' });
+      setTimeout(() => navigate('/user/login'), 1500);
+    } catch (error) {
+      setSnackbar({ open: true, message: error.response?.data?.message || 'Signup failed', severity: 'error' });
+    }
+  };
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleClickShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
@@ -214,7 +220,13 @@ function SignupPage() {
           </Formik>
         </Container>
       </Grid>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+        <MuiAlert elevation={6} variant="filled" onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
+          {snackbar.message}
+        </MuiAlert>
+      </Snackbar>
     </Grid>
+    
   );
 }
 

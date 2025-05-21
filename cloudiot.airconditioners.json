@@ -1,0 +1,161 @@
+[{
+  "_id": {
+    "$oid": "67937181e61cf707f6beeaa7"
+  },
+  "devicename": "testing",
+  "deviceID": "87gsjhws",
+  "power": "off",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-24T10:54:57.140Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-24T10:54:57.140Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "679726a909839448d6601285"
+  },
+  "devicename": "IT Office 2nd Floor",
+  "power": "on",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T06:24:41.562Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T06:24:41.562Z"
+  },
+  "__v": 0,
+  "deviceID": "it_office_ac"
+},
+{
+  "_id": {
+    "$oid": "679730da744d2cc6cc3a044c"
+  },
+  "devicename": "Production Office 2nd Floor",
+  "deviceID": "production_office_ac",
+  "power": "on",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T07:08:10.721Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T07:08:10.721Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67973115744d2cc6cc3a3cde"
+  },
+  "devicename": "Account Office 2nd Floor",
+  "deviceID": "account_office_ac",
+  "power": "on",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T07:09:09.350Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T07:09:09.350Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67973134744d2cc6cc3a5905"
+  },
+  "devicename": "Civil Office 2nd Floor",
+  "deviceID": "civil_office_ac",
+  "power": "on",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T07:09:40.525Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T07:09:40.525Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6797570e744d2cc6cc590f4e"
+  },
+  "devicename": "Studio Room 1st Floor (2)",
+  "deviceID": "studio_room_ac_2",
+  "power": "off",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T09:51:10.442Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T09:51:10.442Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "679757c9744d2cc6cc59cbcf"
+  },
+  "devicename": "Studio Room 1st Floor (1)",
+  "deviceID": "studio_room_ac_1",
+  "power": "off",
+  "mode": "Heat",
+  "targetTemperature": 26,
+  "currentTemperature": 18,
+  "swingMode": "off",
+  "fanMode": "auto",
+  "currentHumidity": 40,
+  "presetState": "auto",
+  "isActive": true,
+  "createdAt": {
+    "$date": "2025-01-27T09:54:17.679Z"
+  },
+  "updatedAt": {
+    "$date": "2025-01-27T09:54:17.679Z"
+  },
+  "__v": 0
+}]

@@ -79,14 +79,10 @@ const start = async () => {
         
             try {
                 // Fetch all entities grouped by devices
-                const entities = await Entity.find({ isActive: true }).populate('device', 'name');
-
-        
-                // Group entities by their associated device
-                // const entities = await Entity.find({ isActive: true });
-
-
-                const groupedEntities = entities.reduce((groups, entity) => {
+                const entities = await Entity.find({ isActive: true }).populate('device', 'name isActive');
+                // exclude entitties whos devices is inactive
+                const filteredEntities = entities.filter(entity => entity.device && entity.device.isActive);
+                const groupedEntities = filteredEntities.reduce((groups, entity) => {
                     if (!entity.device) {
                         console.warn(`Entity with ID ${entity._id} does not have an associated device`);
                         return groups;
@@ -223,15 +219,6 @@ const start = async () => {
 };
 start();
 module.exports = app;
-
-
-
-
-
-
-
-
-
 
 
 // require('dotenv').config();

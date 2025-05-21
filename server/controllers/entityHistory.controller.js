@@ -17,7 +17,9 @@ const getAllEntities = async (req, res) => {
       },
       {
         $unwind: "$deviceInfo",
+        
       },
+      { $match: { "deviceInfo.isActive": true } },
       {
         $project: {
           _id: 1,

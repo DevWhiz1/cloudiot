@@ -22,6 +22,9 @@ import * as yup from 'yup';
 import axios from 'axios';
 import { AuthContext } from '../../hooks/useAuth';
 import { useMediaQuery } from '@mui/material';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
 const ApiUrl = process.env.REACT_APP_API_URL;
 const GradientButton = styled(Button)(({ theme }) => ({
   background: `linear-gradient(45deg, ${theme.palette.secondary.main} 30%, ${theme.palette.primary.main} 90%)`,
@@ -48,19 +51,23 @@ const validationSchema = yup.object({
 
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const handleClickShowPassword = () => setShowPassword(!showPassword);
   const handleMouseDownPassword = (event) => event.preventDefault();
   const { login } = useContext(AuthContext);
+  const navigate = useNavigate();
   const handleApiCall = async (values) => {
-    
     try {
       const response = await axios.post(`${ApiUrl}/user/login`, values);
       if (response.data.token) {
-        login(response.data.token);
-        window.location.href = '/';
+        setSnackbar({ open: true, message: 'Login successful! Redirecting...', severity: 'success' });
+        setTimeout(() => {
+          login(response.data.token);
+          navigate('/');
+        }, 1500);
       }
     } catch (error) {
-      console.error("Login error:", error);
+      setSnackbar({ open: true, message: error.response?.data?.message || 'Login failed', severity: 'error' });
     }
   };
   const isSmallScreen = useMediaQuery(theme => theme.breakpoints.down('sm'));
@@ -184,6 +191,11 @@ function LoginPage() {
           </Link>
         </Container>
       </Grid>
+      <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
+  <MuiAlert elevation={6} variant="filled" onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity}>
+    {snackbar.message}
+  </MuiAlert>
+</Snackbar>
     </Grid>
   );
 }

@@ -9,7 +9,7 @@ const AddAirConditionerForm = () => {
   const [devicename, setDevicename] = useState("");
   const [deviceID, setDeviceID] = useState("");
   const [error, setError] = useState("");
-  const [open, setOpen] = useState(false); // State to control the dialog (modal)
+  const [open, setOpen] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,7 +19,6 @@ const AddAirConditionerForm = () => {
         deviceID,
       });
       console.log("Device added:", response.data);
-      // Clear form and close the modal
       setDevicename("");
       setDeviceID("");
       // setOpen(false);

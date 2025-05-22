@@ -810,7 +810,7 @@ const mqttOptions={
   
 
   useEffect(() => {
-    const mqttClient = mqtt.connect('ws://182.180.50.59:9001/ws', {
+    const mqttClient = mqtt.connect('ws://attendance.thecloudserv.com:9001/ws', {
       clean: false,
       clientId: `mqtt_${Math.random().toString(16).slice(3)}`,
       reconnectPeriod: 1000,

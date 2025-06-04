@@ -9,7 +9,7 @@
 // const TIMEZONE = 'Asia/Karachi'; // Adjust to your local timezone
 
 // async function connectDB() {
-//   await mongoose.connect('mongodb+srv://cloudservicesiot:1C18e0gYKYGalK0E@iot.qgwsr.mongodb.net/cloudiot');
+//   await mongoose.connect('');
 //   console.log('✅ Connected to MongoDB');
 // }
 
@@ -207,7 +207,7 @@
 // const energyHourly = require('../models/energyMeterModels/energyHourly.model');
 
 // async function testHourlyAggregation() {
-//   await mongoose.connect('mongodb+srv://cloudservicesiot:1C18e0gYKYGalK0E@iot.qgwsr.mongodb.net/cloudiot');
+//   await mongoose.connect('');
 
 //   console.log('✅ Connected to MongoDB');
 
@@ -277,7 +277,7 @@ const mongoose = require('mongoose');
   const energyYearly = require('../models/energyMeterModels/energyYearly.model');
 
 async function aggregateAllLevels() {
-  await mongoose.connect('mongodb+srv://cloudservicesiot:1C18e0gYKYGalK0E@iot.qgwsr.mongodb.net/cloudiot');
+  await mongoose.connect('');
   console.log('✅ Connected to MongoDB');
 
   const now = new Date();

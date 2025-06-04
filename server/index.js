@@ -5,20 +5,30 @@ const bodyParser = require('body-parser');
 const connectDB = require('./db/connect');
 const mqttClient = require('./mqtt/mqttClient');
 const { Server } = require('socket.io');
+// const fs = require('fs');
+// const https = require('https');
 const http = require('http');
-const Entity = require('./models/entity.model'); // Entity model for DB interaction
+const Entity = require('./models/entity.model');
+const {energyRawHistoryController} = require('./controllers/energyMeterRawHistory.controller');
+const { scheduleAggregations } = require("./DbScheduling/energyAggregator");
 const mongodb_Url = process.env.MONGO_URI;
 const app = express();
 // Middleware
 
-// const corsOptions = {
-//     origin: "*",
-//     methods: "GET,POST,PUT,DELETE",
-//     credentials: true, 
-// };
+const corsOptions = {
+    origin: "https://cloudiot-automation.vercel.app",
+    methods: "GET,POST,PUT,DELETE",
+    credentials: true, 
+};
 
+// app.use(cors(corsOptions));
 app.use(cors());
-
+// Read self-signed certs
+// const credentials = {
+//   key: fs.readFileSync('./certs/private.key', 'utf8'),
+//   cert: fs.readFileSync('./certs/certificate.crt', 'utf8'),
+//   ca: fs.readFileSync('./certs/ca_bundle.crt', 'utf8')
+// };
 // app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -49,8 +59,9 @@ const start = async () => {
     try {
         await connectDB(dbConnectionString);
         console.log('Connected to database');
-
+scheduleAggregations();
         const server = http.createServer(app);
+        // const server = https.createServer(credentials, app);
         
         const io = new Server(server, {
             cors: {
@@ -63,7 +74,16 @@ const start = async () => {
         });
 
         // Fetch all active entities from the database and subscribe to their MQTT topics
-        const entities = await Entity.find({ isActive: true });
+        // const entities = await Entity.find({ isActive: true });
+         const entities = await Entity.find({ isActive: true, entityName: {
+    $nin: [
+        "PZEM-004T V3 Current",
+        "PZEM-004T V3 Voltage",
+        "PZEM-004T V3 Power",
+        "PZEM-004T V3 Frequency",
+        "PZEM-004T V3 Power Factor"
+    ]
+} });
         entities.forEach((entity) => {
             mqttClient.subscribe(entity.subscribeTopic, (err) => {
                 if (err) {
@@ -75,11 +95,10 @@ const start = async () => {
         });
 
         io.on('connection', async (socket) => {
-            console.log('New client connected');
-        
+            console.log(`New WebSocket client connected: ${socket.id}`);        
             try {
                 // Fetch all entities grouped by devices
-                const entities = await Entity.find({ isActive: true }).populate('device', 'name isActive');
+     const entities = await Entity.find({ isActive: true }).populate('device', 'name isActive');
                 // exclude entitties whos devices is inactive
                 const filteredEntities = entities.filter(entity => entity.device && entity.device.isActive);
                 const groupedEntities = filteredEntities.reduce((groups, entity) => {
@@ -115,7 +134,7 @@ const start = async () => {
                 // Send grouped entities to the client
                 socket.emit('initial_state', { devices: Object.values(groupedEntities) });
         
-                console.log('Sent grouped entities to the client',groupedEntities);
+                // console.log('Sent grouped entities to the client',groupedEntities);
             } catch (error) {
                 console.error('Error fetching initial state:', error);
             }
@@ -133,7 +152,7 @@ const start = async () => {
                             if (err) {
                                 console.error('Failed to publish MQTT message:', err);
                             } else {
-                                console.log(`Published new state to topic ${publishTopic}: ${state}`);
+                                // console.log(`Published new state to topic ${publishTopic}: ${state}`);
                             }
                         });
         
@@ -169,29 +188,32 @@ const start = async () => {
                     // Update the entity's state in the database
                     const newState = message.toString();
                     entity.state = newState;
-                    entity.updatedAt = new Date();
-                    await entity.save();
+                    // entity.updatedAt = new Date();
+                    // await entity.save();
         
                     console.log(`Updated state for entity ${entity.entityName} (${entity._id}): ${newState}` );
         
                     // Update or create entity history
                     try {
-                        const entityId = entity._id; // Fetch the entity's ID
+                        const entityId = entity._id; // Fetch the entity's Id
                         const deviceId = entity.device; 
                         let entityHistory = await entityHistoryModel.findOne({ entityId });
         
                         if (entityHistory) {
                             // Push a new history entry
                             entityHistory.history.push({ value: newState, time: new Date() });
+                        
                             await entityHistory.save();
+                            await energyRawHistoryController(entity, entityId, deviceId, newState);
                         } else {
-                            // Create a new entity history document
+                            // Create a new entity history document if it doesn't exist
                             entityHistory = new entityHistoryModel({
                                 entityId: entityId,
                                 deviceId: deviceId,
                                 history: [{ value: newState, time: new Date() }],
                             });
                             await entityHistory.save();
+                            await energyRawHistoryController(entity, entityId, deviceId, newState);
                         }
         
                         console.log(`Updated history for entity ${entity.entityName} (${entity._id}) with device (${deviceId}).`);

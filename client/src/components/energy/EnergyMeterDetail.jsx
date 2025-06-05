@@ -3,140 +3,173 @@ import { useLocation } from "react-router-dom";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, Typography, CircularProgress, FormControl, Select, MenuItem, Grid, Box, useTheme } from "@mui/material";
 import { format, subHours, subDays, subMonths, subYears, startOfHour, startOfDay, startOfMonth, eachHourOfInterval, eachDayOfInterval, eachMonthOfInterval } from "date-fns";
+import axios from "axios";
+
+const typeMap = {
+  '24h': 'hourly',
+  '7d': 'daily',
+  '30d': 'daily',
+  '12m': 'monthly',
+  'yearly': 'yearly'
+};
+
+const getRange = (timeRange) => {
+  const now = new Date();
+  let start;
+  switch (timeRange) {
+    case '24h': 
+      start = subHours(now, 24);
+      return { 
+        start: startOfHour(start).toISOString(), 
+        end: startOfHour(now).toISOString(),
+        type: 'hourly'
+      };
+    case '7d':
+      start = subDays(now, 7);
+      return { 
+        start: startOfDay(start).toISOString(), 
+        end: startOfDay(now).toISOString(),
+        type: 'daily'
+      };
+    case '30d':
+      start = subDays(now, 30);
+      return { 
+        start: startOfDay(start).toISOString(), 
+        end: startOfDay(now).toISOString(),
+        type: 'daily'
+      };
+    case '12m':
+      start = subMonths(now, 12);  // Start 12 months ago
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0); // Last day of the current month
+      return { 
+        start: startOfMonth(start).toISOString(), 
+        end: end.toISOString(), 
+        type: 'monthly'
+      };
+    case 'yearly':
+      start = subYears(now, 1);
+      return { 
+        start: startOfMonth(start).toISOString(), 
+        end: startOfMonth(now).toISOString(),
+        type: 'yearly'
+      };
+    default: 
+      start = subHours(now, 24);
+      return { 
+        start: startOfHour(start).toISOString(), 
+        end: startOfHour(now).toISOString(),
+        type: 'hourly'
+      };
+  }
+};
+
 
 const DetailPage = () => {
   const location = useLocation();
   const { deviceName, entityName, state, meterId } = location.state || {};
   const theme = useTheme();
 
-  const [rawData, setRawData] = useState([]);
+  const [energyData, setEnergyData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState('24h');
 
-  // Time range options with labels and time functions
+  // Time range options
   const timeRanges = [
-    { value: '24h', label: 'Last 24 Hours', subFn: () => subHours(new Date(), 24) },
-    { value: 'week', label: 'Last 7 Days', subFn: () => subDays(new Date(), 7) },
-    { value: 'month', label: 'Last 30 Days', subFn: () => subDays(new Date(), 30) },
-    { value: 'year', label: 'Last 12 Months', subFn: () => subYears(new Date(), 1) }
+    { value: '24h', label: 'Last 24 Hours' },
+    { value: '7d', label: 'Last 7 Days' },
+    { value: '30d', label: 'Last 30 Days' },
+    { value: '12m', label: 'Last 12 Months' },
+    { value: 'yearly', label: 'Yearly' }
   ];
 
   useEffect(() => {
-    const fetchGraphData = async () => {
+    const fetchEnergyData = async () => {
+      const { start, end, type } = getRange(timeRange);
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/energy/meters/detail/${meterId}`);
-        const data = await response.json();
-        setRawData(data);
+        const res = await axios.get(`${process.env.REACT_APP_API_URL}/energy/energy-meter-data`, {
+          params: {
+            entityId: meterId,
+            type,
+            start,
+            end
+          }
+        });
+        console.log('Fetched energy data:', res.data);
+        // Ensure data is sorted by timestamp
+        const sortedData = res.data.sort((a, b) => 
+          new Date(a.timestamp) - new Date(b.timestamp)
+        );
+        
+        setEnergyData(sortedData);
         setLoading(false);
-      } catch (error) {
-        setError("Failed to fetch data. Please try again later.");
+      } catch (err) {
+        console.error('Error fetching energy data:', err);
+        setError("Failed to fetch energy data. Please try again.");
         setLoading(false);
-        console.error("Fetch error:", error);
       }
     };
-
-    fetchGraphData();
-  }, [meterId]);
-
-  // Process data based on time range
-  const processedData = useMemo(() => {
-    if (!rawData.length) return [];
-
-    // Convert raw data to a more usable format
-    const meterReadings = rawData.map(item => ({
-      time: new Date(item.time),
-      value: parseInt(item.value)
-    })).sort((a, b) => a.time - b.time);
-
-    const now = new Date();
-    let startDate;
-    let timeFormat;
-    let intervalFn;
-    let dataKeyFormat;
-
-    switch (timeRange) {
-      case '24h':
-        startDate = subHours(now, 24);
-        timeFormat = 'h aaa';
-        intervalFn = eachHourOfInterval;
-        dataKeyFormat = 'yyyy-MM-dd-HH';
-        break;
-      case 'week':
-        startDate = subDays(now, 7);
-        timeFormat = 'EEE, MMM d';
-        intervalFn = eachDayOfInterval;
-        dataKeyFormat = 'yyyy-MM-dd';
-        break;
-      case 'month':
-        startDate = subDays(now, 30);
-        timeFormat = 'MMM d';
-        intervalFn = eachDayOfInterval;
-        dataKeyFormat = 'yyyy-MM-dd';
-        break;
-      case 'year':
-        startDate = subYears(now, 1);
-        timeFormat = 'MMM yyyy';
-        intervalFn = eachMonthOfInterval;
-        dataKeyFormat = 'yyyy-MM';
-        break;
-      default:
-        return [];
+    
+    if (meterId) {
+      fetchEnergyData();
     }
+  }, [meterId, timeRange]);
 
-    // Create time buckets
-    const timeBuckets = intervalFn({ start: startDate, end: now }).reduce((acc, date) => {
-      const key = format(date, dataKeyFormat);
-      acc[key] = {
-        time: format(date, timeFormat),
-        startTime: date,
-        readings: []
-      };
-      return acc;
-    }, {});
-
-    // Distribute readings into time buckets
-    meterReadings.forEach(reading => {
-      let bucketKey;
-      if (timeRange === '24h') {
-        bucketKey = format(startOfHour(reading.time), dataKeyFormat);
-      } else if (timeRange === 'year') {
-        bucketKey = format(startOfMonth(reading.time), dataKeyFormat);
-      } else {
-        bucketKey = format(startOfDay(reading.time), dataKeyFormat);
+  // Process data for chart display
+  const chartData = useMemo(() => {
+    if (!energyData.length) return [];
+    
+    return energyData.map(item => {
+      const date = new Date(item.timestamp);
+      let timeLabel;
+      
+      switch (timeRange) {
+        case '24h':
+          timeLabel = format(date, 'h aaa');
+          break;
+        case '7d':
+        case '30d':
+          timeLabel = format(date, 'MMM d');
+          break;
+        case '12m':
+        case 'yearly':
+          timeLabel = format(date, 'MMM yyyy');
+          break;
+        default:
+          timeLabel = format(date, 'h aaa');
       }
-
-      if (timeBuckets[bucketKey]) {
-        timeBuckets[bucketKey].readings.push(reading.value);
-      }
-    });
-
-    // Calculate usage for each bucket
-    return Object.values(timeBuckets).map(bucket => {
-      if (bucket.readings.length === 0) {
-        return {
-          time: bucket.time,
-          usage: 0,
-          startTime: bucket.startTime
-        };
-      }
-
-      const minReading = Math.min(...bucket.readings);
-      const maxReading = Math.max(...bucket.readings);
-      const usage = Math.max(0, maxReading - minReading);
-
+      
       return {
-        time: bucket.time,
-        usage,
-        startTime: bucket.startTime
+        time: timeLabel,
+        totalValue: item.totalValue,
+        timestamp: item.timestamp,
+        fullDate: date
       };
-    }).sort((a, b) => a.startTime - b.startTime);
-
-  }, [rawData, timeRange]);
+    });
+  }, [energyData, timeRange]);
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      let dateString;
+      
+      switch (timeRange) {
+        case '24h':
+          dateString = format(data.fullDate, 'MMM d, yyyy h aaa');
+          break;
+        case '7d':
+        case '30d':
+          dateString = format(data.fullDate, 'EEEE, MMM d, yyyy');
+          break;
+        case '12m':
+        case 'yearly':
+          dateString = format(data.fullDate, 'MMMM yyyy');
+          break;
+        default:
+          dateString = format(data.fullDate, 'MMM d, yyyy h aaa');
+      }
+      
       return (
         <Card sx={{ 
           p: 1.5, 
@@ -145,10 +178,10 @@ const DetailPage = () => {
           border: `1px solid ${theme.palette.divider}`
         }}>
           <Typography variant="subtitle2" fontWeight={600} mb={0.5}>
-            {label}
+            {dateString}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Usage: <span style={{ fontWeight: 600 }}>{payload[0].value.toLocaleString()} wh</span>
+            Consumption: <span style={{ fontWeight: 600 }}>{payload[0].value.toLocaleString()} wh</span>
           </Typography>
         </Card>
       );
@@ -173,6 +206,39 @@ const DetailPage = () => {
       </g>
     );
   };
+
+  // Calculate statistics
+  const stats = useMemo(() => {
+    if (!energyData.length) return null;
+    
+    const totalUsage = energyData.reduce((sum, item) => sum + item.totalValue, 0);
+    let averageUsage;
+    let peakUsage = Math.max(...energyData.map(item => item.totalValue));
+    
+    switch (timeRange) {
+      case '24h':
+        averageUsage = totalUsage / 24;
+        break;
+      case '7d':
+        averageUsage = totalUsage / 7;
+        break;
+      case '30d':
+        averageUsage = totalUsage / 30;
+        break;
+      case '12m':
+      case 'yearly':
+        averageUsage = totalUsage / 12;
+        break;
+      default:
+        averageUsage = totalUsage;
+    }
+    
+    return {
+      totalUsage,
+      averageUsage: Math.round(averageUsage),
+      peakUsage
+    };
+  }, [energyData, timeRange]);
 
   if (loading) {
     return (
@@ -240,7 +306,7 @@ const DetailPage = () => {
               <Box sx={{ height: 400 }}>
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
-                    data={processedData}
+                    data={chartData}
                     margin={{
                       top: 10,
                       right: 20,
@@ -250,18 +316,18 @@ const DetailPage = () => {
                   >
                     <CartesianGrid 
                       strokeDasharray="3 3" 
-                      vertical={false} 
+                      vertical={false}  
                       stroke={theme.palette.divider}
                     />
                     <XAxis
                       dataKey="time"
                       tick={<XAxisTick />}
-                      interval={timeRange === '24h' ? 3 : timeRange === 'year' ? 0 : 'preserveEnd'}
+                      interval={timeRange === '24h' ? 3 : timeRange === 'yearly' ? 0 : 'preserveEnd'}
                       height={70}
                     />
                     <YAxis
                       label={{
-                        value: 'Energy Usage (wh)',
+                        value: 'Energy (wh)',
                         angle: -90,
                         position: 'insideLeft',
                         offset: 10,
@@ -280,7 +346,7 @@ const DetailPage = () => {
                       }}
                     />
                     <Bar
-                      dataKey="usage"
+                      dataKey="totalValue"
                       fill={theme.palette.primary.main}
                       radius={[4, 4, 0, 0]}
                       animationDuration={1000}
@@ -303,7 +369,7 @@ const DetailPage = () => {
                 Summary
               </Typography>
               
-              {processedData.length > 0 && (
+              {stats && (
                 <Box>
                   <Grid container spacing={2}>
                     <Grid item xs={6}>
@@ -311,7 +377,7 @@ const DetailPage = () => {
                         Total Usage
                       </Typography>
                       <Typography variant="h5" fontWeight={600}>
-                        {processedData.reduce((sum, item) => sum + item.usage, 0).toLocaleString()} wh
+                        {stats.totalUsage.toLocaleString()} wh
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
@@ -319,10 +385,7 @@ const DetailPage = () => {
                         Average Daily
                       </Typography>
                       <Typography variant="h5" fontWeight={600}>
-                        {Math.round(processedData.reduce((sum, item) => sum + item.usage, 0) / 
-                          (timeRange === '24h' ? 1 : 
-                           timeRange === 'week' ? 7 : 
-                           timeRange === 'month' ? 30 : 12)).toLocaleString()} wh
+                        {stats.averageUsage.toLocaleString()} wh
                       </Typography>
                     </Grid>
                     <Grid item xs={12}>
@@ -338,7 +401,7 @@ const DetailPage = () => {
                         Peak Usage
                       </Typography>
                       <Typography variant="body1">
-                        {Math.max(...processedData.map(item => item.usage)).toLocaleString()} wh
+                        {stats.peakUsage.toLocaleString()} wh
                       </Typography>
                     </Grid>
                   </Grid>
@@ -353,7 +416,6 @@ const DetailPage = () => {
 };
 
 export default DetailPage;
-
 
 
 

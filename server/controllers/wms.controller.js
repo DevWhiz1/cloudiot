@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const EntityHistory = require("../models/entityHistory.model");
 const Entity = require("../models/entity.model");
 const Device = require("../models/Device.model");
-
+const { ObjectId } = require('mongoose').Types;
 const getWmsMotors = async (req, res) => {
   try {
     const result = await Entity.aggregate([
@@ -104,13 +104,34 @@ const getWfsPulseCounter = async (req, res) => {
   }
 };
 
-
+// get all wms entities
+const getAllWmsEntities= async(req,res)=>{
+  const deviceId= "67727f1fa2ab72f2309c9810";
+  try{
+    const wmsEntities= await Entity.find({
+      device:new ObjectId(deviceId),
+    })
+    if(!wmsEntities || wmsEntities.length === 0){
+      return res.status(404).json({
+        message:"No WMS entities found"
+      })
+    }
+    res.status(200).json({
+      data:wmsEntities
+    });
+  }catch(error){
+    res.status(500).json({
+      error:error.message,
+    })
+  }
+}
 
 
 module.exports =  
 {getWmsMotorsHistory, 
 getWmsMotors,
-getWfsPulseCounter
+getWfsPulseCounter,
+getAllWmsEntities
 };
 
 

@@ -40,6 +40,7 @@ const entityHistoryModel = require('./models/entityHistory.model');
 const EntityHistory= require("./routes/history.route");
 const AirconditionerRoutes = require("./routes/airConditioner.route")
 const entityHistoryRoutes = require("./routes/entityHistory.route")
+const entityAllHistoryRoute= require("./routes/entityHistory.route");
 const wmsRoutes= require("./routes/wms.route")
 app.use('/user', userRoutes);
 app.use('/device', deviceRoutes);
@@ -47,8 +48,9 @@ app.use('/entity', entityRoutes);
 app.use('/automation', automationRoutes);
 app.use('/energy', EntityHistory);
 app.use("/ac", AirconditionerRoutes);
-app.use("/entity",entityHistoryRoutes);
+app.use("/energy",entityHistoryRoutes);
 app.use("/wms",wmsRoutes);
+app.use("/entity-history",entityAllHistoryRoute);
 
 app.get('/', (req, res) => { res.status(200).json({message:"Server is running"})})
 // Start server
@@ -59,7 +61,8 @@ const start = async () => {
     try {
         await connectDB(dbConnectionString);
         console.log('Connected to database');
-scheduleAggregations();
+        // Uncomment the line below to schedule aggregations if needed
+// scheduleAggregations();
         const server = http.createServer(app);
         // const server = https.createServer(credentials, app);
         
@@ -98,9 +101,11 @@ scheduleAggregations();
             console.log(`New WebSocket client connected: ${socket.id}`);        
             try {
                 // Fetch all entities grouped by devices
-     const entities = await Entity.find({ isActive: true }).populate('device', 'name isActive');
+     const entities = await Entity.find({ isActive: true , }).populate('device', 'name isActive');
                 // exclude entitties whos devices is inactive
-                const filteredEntities = entities.filter(entity => entity.device && entity.device.isActive);
+                const filteredEntities = entities.filter(entity => entity.device && entity.device.isActive && !entity.device.name.includes("Meter") && !entity.device.name.includes("Water"));
+                                // const filteredEntities = entities.filter(entity => entity.device && !entity.device.name.includes("Meter"));
+                // also filter all the meters and wms 
                 const groupedEntities = filteredEntities.reduce((groups, entity) => {
                     if (!entity.device) {
                         console.warn(`Entity with ID ${entity._id} does not have an associated device`);
@@ -134,7 +139,7 @@ scheduleAggregations();
                 // Send grouped entities to the client
                 socket.emit('initial_state', { devices: Object.values(groupedEntities) });
         
-                // console.log('Sent grouped entities to the client',groupedEntities);
+                console.log('Sent grouped entities to the client',groupedEntities);
             } catch (error) {
                 console.error('Error fetching initial state:', error);
             }
@@ -161,12 +166,12 @@ scheduleAggregations();
                     //     entity.updatedAt = new Date();
                     //     await entity.save();
         
-                    //    // Broadcast updated state to all clients
-                    //     io.emit('state_update', {
-                    //         deviceId: entity.device,
-                    //         entityId: entity._id,
-                    //         state,
-                    //     });
+                       // Broadcast updated state to all clients
+                        io.emit('state_update', {
+                            deviceId: entity.device,
+                            entityId: entity._id,
+                            state,
+                        });
                     }
                 } catch (error) {
                     console.error('Error handling state change:', error);

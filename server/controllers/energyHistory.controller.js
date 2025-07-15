@@ -357,7 +357,13 @@ const getAllEnergyEntities = async (req, res) => {
   try {
     const result = await Entity.aggregate([
       {
-        $match: { stateType: "sensor", entityName: /PZEM-004T V3 Energy/i },
+        $match: {
+          stateType: "sensor",
+          entityName: {
+            $regex: /PZEM-004T V3 Energy/i,
+            $nin:["PZEM-004T V3 Energy-2", "PZEM-004T V3 Energy-3"]
+          },
+        },
       },
       {
         $lookup: {
@@ -368,15 +374,22 @@ const getAllEnergyEntities = async (req, res) => {
         },
       },
       {
-        $unwind: "$deviceInfo",
+        $unwind: "$deviceInfo",  // Flatten deviceInfo array
       },
-      // exclude inactive devices
-      { $match: { "deviceInfo.isActive": true } },
+      // Exclude inactive devices and specific device names
+      {
+        $match: {
+          "deviceInfo.isActive": true,  // Ensure the device is active
+          "deviceInfo.name": { 
+            $nin: ["Sales-2 Office Smart Energy Meter","CEO-2 Office Smart Energy Meter"]  // Exclude this specific device name
+          },
+        },
+      },
       {
         $project: {
           _id: 1,
           entityName: 1,
-          deviceName: "$deviceInfo.name",
+          deviceName: "$deviceInfo.name",  // Show device name
           entityId: 1,
           state: 1,
         },
@@ -407,11 +420,43 @@ const getAllEnergyEntities = async (req, res) => {
     }
 };
   
+// GET /api/entities/:entityId/details
+const getEntityWithAllDeviceEntities = async (req, res) => {
+  try {
+    const entityId = req.params.entityId;
+
+    // Step 1: Find the main entity
+    const mainEntity = await Entity.findById(entityId);
+    if (!mainEntity) {
+      return res.status(404).json({ message: 'Entity not found' });
+    }
+
+    // Step 2: Get the device ID from the main entity
+    const deviceId = mainEntity.device;
+
+    // Step 3: Get all entities for the same device
+    const allEntities = await Entity.find({ device: deviceId });
+
+    // Step 4: Optionally get the device details too
+    const device = await Device.findById(deviceId);
+
+    res.json({
+      device,
+      associatedEntities: allEntities
+    });
+
+  } catch (err) {
+    console.error('Error:', err);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
   
 module.exports =  
 {getEnergyHistory,
 getAllEnergyEntities,
-getEnergyDataByFilter
+getEnergyDataByFilter,
+getEntityWithAllDeviceEntities
 };
 
 

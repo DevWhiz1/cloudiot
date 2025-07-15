@@ -29,7 +29,7 @@ const Entities = () => {
   useEffect(() => {
     const fetchEntities = async () => {
       try {
-        const response = await fetch(`${ApiUrl}/entity/history`);
+        const response = await fetch(`${ApiUrl}/entity-history/history`);
         const data = await response.json();
         setEntities(data);
         setLoading(false);

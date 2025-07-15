@@ -56,7 +56,7 @@ const AllAirConditioner = () => {
               <CardContent sx={{ textAlign: "center" }}>
                 <Typography variant="h4" component="div" gutterBottom>
                   {device.devicename}
-                  {device.deviceID}
+                  {/* {device.deviceID} */}
                 </Typography>
 
                 {/* Icon based on power state */}

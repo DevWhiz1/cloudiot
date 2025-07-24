@@ -114,7 +114,7 @@ const WaterManagementSystem = () => {
     return theme.palette.warning.main;
   };
 
-  const renderEntityCard = (entity, icon, color) => (
+  const renderEntityCard = (entity, icon, color, isPulse = false) => (
     <Grid item xs={12} key={entity._id}>
       <StyledCard>
         <CardContent>
@@ -139,21 +139,27 @@ const WaterManagementSystem = () => {
                 </Typography>
               </Box>
             </Box>
-  <Button
-                  variant="contained"
-                  size="small"
-                  endIcon={<InfoIcon />}
-                  onClick={() => navigate(`/wms/motors/history/detail/${entity._id}`, {
+            <Button
+              variant="contained"    
+              size="small"
+              endIcon={<InfoIcon />} 
+              onClick={() => {
+                if (isPulse) {
+                  navigate(`/entities/history/detail/${entity._id}`);
+                } else {
+                  navigate(`/wms/motors/history/detail/${entity._id}}`, {
                     state: {
                       deviceName: entity.deviceName,
                       entityName: entity.entityName,
                       state: entity.state,
                       entityId: entity._id,
                     },
-                  })}
-                >
-                  More Details
-                </Button>
+                  });
+                }
+              }}
+            >
+              More Details
+            </Button>
           </Box>
         </CardContent>
       </StyledCard>
@@ -261,7 +267,8 @@ const WaterManagementSystem = () => {
               {pulseCounters.map(counter => renderEntityCard(
                 counter,
                 <FlowIcon />,
-                theme.palette.secondary.light
+                theme.palette.secondary.light,
+                true // isPulse
               ))}
             </Grid>
           </Paper>

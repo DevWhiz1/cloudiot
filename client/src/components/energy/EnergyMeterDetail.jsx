@@ -85,7 +85,7 @@ const DetailPage = () => {
   const [associatedEntities, setAssociatedEntities] = useState([]);
   const [additionalAssociatedEntities, setAdditionalAssociatedEntities] = useState([]);
   const [additionalDeviceInfo, setAdditionalDeviceInfo] = useState([]);
-
+  const ApiUrl = process.env.REACT_APP_API_URL;
   // Check if this is a special meter that needs additional charts
   const isSpecialMeter = useMemo(() => Object.keys(specialMeterPairs).includes(meterId), [meterId]);
   const additionalMeterIds = useMemo(() => isSpecialMeter ? specialMeterPairs[meterId] : [], [isSpecialMeter, meterId]);
@@ -156,7 +156,7 @@ const DetailPage = () => {
         setLoading(true);
       }
       
-      const res = await axios.get(`http://localhost:5000/energy/energy-meter-data`, {
+      const res = await axios.get(`${ApiUrl}/energy/energy-meter-data`, {
         params: {
           entityId: meterId,
           type,
@@ -203,7 +203,7 @@ const DetailPage = () => {
 
   const fetchAssociatedEntities = async (meterId, index = -1) => {
     try {
-      const res = await axios.get(`http://localhost:5000/energy/device-with-entities/${meterId}`);
+      const res = await axios.get(`${ApiUrl}/energy/device-with-entities/${meterId}`);
       
       if (index >= 0) {
         // Update associated entities for additional chart
